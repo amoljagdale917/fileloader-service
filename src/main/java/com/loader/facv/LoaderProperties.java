@@ -11,9 +11,9 @@ public class LoaderProperties {
 
     private boolean enabled = true;
     private boolean runOnStartup = false;
-    private String incomingPath = "hub/var/incoming";
-    private String successPath = "hub/var/success";
-    private String failedPath = "hub/var/failed";
+    private String incomingPath = "/Users/amoljagdale/Documents/hub/var/incoming";
+    private String successPath = "/Users/amoljagdale/Documents/hub/var/success";
+    private String failedPath = "/Users/amoljagdale/Documents/hub/var/failed";
     private List<String> fileNames = new ArrayList<String>();
     private String charset = "UTF-8";
     private int batchSize = 1000;

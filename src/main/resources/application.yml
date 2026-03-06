@@ -7,16 +7,17 @@ spring:
 loader:
   enabled: true
   run-on-startup: false
-  incoming-path: hub/var/incoming
-  success-path: hub/var/success
-  failed-path: hub/var/failed
+  incoming-path: /Users/amoljagdale/Documents/hub/var/incoming
+  success-path: /Users/amoljagdale/Documents/hub/var/success
+  failed-path: /Users/amoljagdale/Documents/hub/var/failed
   file-names:
     - CLFACV.txt
     - CLFACVHASE.txt
   charset: UTF-8
   batch-size: 1000
+  schedule-cron: "0 59 23 * * *"
   # Every 5 minutes (local testing)
-  schedule-cron: "0 */5 * * * *"
+  #schedule-cron: "0 */5 * * * *"
   schedule-zone: Asia/Hong_Kong
 
 logging:
