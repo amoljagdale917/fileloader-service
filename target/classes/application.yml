@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: facv-loader-service
+  profiles:
+    active: dev
+
+loader:
+  enabled: true
+  run-on-startup: false
+  input-directory: /opt/loader/input
+  file-names:
+    - CLFACV.txt
+    - CLFACVHASE.txt
+  charset: UTF-8
+  batch-size: 1000
+  # End-of-day daily schedule (23:59)
+  schedule-cron: "0 59 23 * * *"
+  schedule-zone: Asia/Hong_Kong
+
+logging:
+  level:
+    root: INFO
+    com.loader.facv: INFO

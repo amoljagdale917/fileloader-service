@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    # Example Oracle connection. Replace with your real values.
+    url: jdbc:oracle:thin:@//HOST:1521/SERVICE_NAME
+    username: YOUR_DB_USER
+    password: YOUR_DB_PASSWORD
+    driver-class-name: oracle.jdbc.OracleDriver
+  sql:
+    init:
+      mode: never
+
+logging:
+  level:
+    root: INFO
+    com.loader.facv: INFO
