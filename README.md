@@ -10,6 +10,7 @@ Spring Boot microservice (Java 8 + Spring Boot 2.7.x) that:
 - JDK 8
 - Spring Boot 2.7.18 (below 3.x)
 - Spring JDBC
+- Lombok
 
 Note: For production DBs (for example Oracle), include your JDBC driver in `pom.xml` based on your environment policy.
 

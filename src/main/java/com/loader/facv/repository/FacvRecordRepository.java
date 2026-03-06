@@ -2,6 +2,7 @@ package com.loader.facv.repository;
 
 import com.loader.facv.model.FacvRecord;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -10,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 @Repository
+@RequiredArgsConstructor
 public class FacvRecordRepository {
 
     private static final String INSERT_SQL =
@@ -19,10 +21,6 @@ public class FacvRecordRepository {
                     ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final JdbcTemplate jdbcTemplate;
-
-    public FacvRecordRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     public void batchInsert(final List<FacvRecord> records) {
         if (records == null || records.isEmpty()) {
