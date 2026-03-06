@@ -11,7 +11,7 @@ Spring Boot microservice (Java 8 + Spring Boot 2.7.x) that:
 - Spring Boot 2.7.18 (below 3.x)
 - Spring JDBC
 - Lombok
-- H2 Database
+- Oracle Database (SQL Developer compatible)
 
 ## Fixed-width Mapping
 - `BNK_NO` (3)
@@ -46,8 +46,8 @@ Important properties:
 - `loader.run-on-startup`: set `true` to load immediately on app start.
 
 Profiles:
-- `dev`: H2 in-memory DB configuration (`application-dev.yml`)
-- `prod`: H2 file-based DB configuration (`application-prod.yml`)
+- `dev`: Oracle SQL Developer local configuration (`application-dev.yml`)
+- `prod`: Oracle production configuration (`application-prod.yml`)
 - `sqldev`: Oracle SQL Developer configuration (`application-sqldev.yml`)
 
 Local folder structure example:
@@ -86,8 +86,7 @@ IntelliJ Run Configuration:
 - Active profile: `dev` or `prod` or `sqldev`
 
 ## DDL
-- Auto-init script: `src/main/resources/schema-h2.sql`
-- Optional manual script: `sql/create_stg_hk_obs_facv.sql`
+- Manual script: `sql/create_stg_hk_obs_facv.sql`
 
 ## Controller Endpoints
 - `POST /api/facv/load`: manually trigger loading of configured files.

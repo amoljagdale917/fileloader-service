@@ -2,16 +2,15 @@ spring:
   application:
     name: facv-loader-service
   datasource:
-    url: jdbc:h2:mem:facvdb;DB_CLOSE_DELAY=-1;MODE=Oracle
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    # SQL Developer connection from screenshot:
+    # Hostname=localhost, Port=1521, Service name=XEPDB1, Username=system
+    url: jdbc:oracle:thin:@//localhost:1521/XEPDB1
+    username: system
+    password: CHANGE_ME
+    driver-class-name: oracle.jdbc.OracleDriver
   sql:
     init:
-      mode: always
-  h2:
-    console:
-      enabled: true
+      mode: never
 
 loader:
   enabled: true

@@ -2,14 +2,14 @@ spring:
   application:
     name: facv-loader-service
   datasource:
-    # H2 file-based DB for PROD-like setup
-    url: jdbc:h2:file:/hub/var/h2/facvdb;MODE=Oracle;AUTO_SERVER=TRUE
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    # Production Oracle connection
+    url: jdbc:oracle:thin:@//HOST:1521/SERVICE_NAME
+    username: YOUR_DB_USER
+    password: YOUR_DB_PASSWORD
+    driver-class-name: oracle.jdbc.OracleDriver
   sql:
     init:
-      mode: always
+      mode: never
 
 loader:
   enabled: true
