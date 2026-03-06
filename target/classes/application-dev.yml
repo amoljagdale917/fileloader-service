@@ -6,7 +6,7 @@ spring:
     # Hostname=localhost, Port=1521, Service name=XEPDB1, Username=system
     url: jdbc:oracle:thin:@//localhost:1521/XEPDB1
     username: system
-    password: CHANGE_ME
+    password: System@123
     driver-class-name: oracle.jdbc.OracleDriver
   sql:
     init:
