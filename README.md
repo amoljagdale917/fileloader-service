@@ -32,7 +32,6 @@ Each line is parsed as fixed-width and preserved as-is (including spaces).
 Profile-based config files:
 - `src/main/resources/application-dev.yml`
 - `src/main/resources/application-prod.yml`
-- `src/main/resources/application-sqldev.yml`
 
 Important properties:
 - `loader.incoming-path`: folder where input files are dropped.
@@ -48,7 +47,6 @@ Important properties:
 Profiles:
 - `dev`: Oracle SQL Developer local configuration (`application-dev.yml`)
 - `prod`: Oracle production configuration (`application-prod.yml`)
-- `sqldev`: Oracle SQL Developer configuration (`application-sqldev.yml`)
 
 Local folder structure example:
 - `hub/var/incoming`
@@ -75,15 +73,10 @@ Run with production profile:
 mvn spring-boot:run -Dspring-boot.run.profiles=prod
 ```
 
-Run with SQL Developer profile:
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=sqldev
-```
-
 IntelliJ Run Configuration:
 - Main class: `com.loader.facv.FacvLoaderApplication`
 - JDK: `1.8`
-- Active profile: `dev` or `prod` or `sqldev`
+- Active profile: `dev` or `prod`
 
 ## DDL
 - Manual script: `sql/create_stg_hk_obs_facv.sql`
