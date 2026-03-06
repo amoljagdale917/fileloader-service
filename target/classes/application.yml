@@ -7,17 +7,20 @@ spring:
 loader:
   enabled: true
   run-on-startup: false
-  incoming-path: /Users/amoljagdale/Documents/hub/var/incoming
-  success-path: /Users/amoljagdale/Documents/hub/var/success
-  failed-path: /Users/amoljagdale/Documents/hub/var/failed
+  # Configure via env vars:
+  # LOADER_BASE_PATH=/hub/var (or /Users/<user>/Documents/hub/var for local)
+  # Optional overrides: LOADER_INCOMING_PATH, LOADER_SUCCESS_PATH, LOADER_FAILED_PATH
+  incoming-path: ${LOADER_INCOMING_PATH:${LOADER_BASE_PATH:hub/var}/incoming}
+  success-path: ${LOADER_SUCCESS_PATH:${LOADER_BASE_PATH:hub/var}/success}
+  failed-path: ${LOADER_FAILED_PATH:${LOADER_BASE_PATH:hub/var}/failed}
   file-names:
     - CLFACV.txt
     - CLFACVHASE.txt
   charset: UTF-8
   batch-size: 1000
-  #schedule-cron: "0 59 23 * * *"
+  schedule-cron: "0 59 23 * * *"
   # Every 5 minutes (local testing)
-  schedule-cron: "0 */5 * * * *"
+  #schedule-cron: "0 */5 * * * *"
   schedule-zone: Asia/Hong_Kong
 
 logging:

@@ -39,7 +39,7 @@ Important properties:
 - Processed files are renamed while moving: `<name>_ddMMyyyy_HHmmssSSS.<ext>`
 - `loader.file-names`: includes `CLFACV.txt`, `CLFACVHASE.txt`.
 - `loader.batch-size`: batch insert size (default `1000`).
-- `loader.schedule-cron`: scheduler cron (currently set to every 5 minutes for local testing).
+- `loader.schedule-cron`: scheduler cron (default end-of-day `0 59 23 * * *`).
 - `loader.schedule-zone`: scheduler timezone.
 - `loader.run-on-startup`: set `true` to load immediately on app start.
 
@@ -51,6 +51,16 @@ Local folder structure example:
 - `hub/var/incoming`
 - `hub/var/success`
 - `hub/var/failed`
+
+Path configuration (recommended):
+- Set `LOADER_BASE_PATH` and service uses:
+  - `${LOADER_BASE_PATH}/incoming`
+  - `${LOADER_BASE_PATH}/success`
+  - `${LOADER_BASE_PATH}/failed`
+- You can also set explicit vars:
+  - `LOADER_INCOMING_PATH`
+  - `LOADER_SUCCESS_PATH`
+  - `LOADER_FAILED_PATH`
 
 ## Run
 ```bash
