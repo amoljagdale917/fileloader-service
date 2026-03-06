@@ -56,3 +56,11 @@ mvn spring-boot:run -Dspring-boot.run.profiles=prod
 ## DDL
 - H2 dev schema: `src/main/resources/schema-h2.sql`
 - Oracle-style sample: `sql/create_stg_hk_obs_facv.sql`
+
+## Controller Endpoints
+- `POST /api/facv/load`: manually trigger loading of configured files.
+- `GET /api/facv/health`: service health response.
+
+## Global Exception Handler
+- `@RestControllerAdvice` is added for consistent API error response.
+- Error payload fields: `timestamp`, `status`, `error`, `message`, `path`.

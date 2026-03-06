@@ -18,6 +18,10 @@ loader:
   schedule-zone: Asia/Hong_Kong
 
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
   level:
     root: INFO
     com.loader.facv: INFO
+    org.springframework.web: INFO
+    org.springframework.jdbc.core.JdbcTemplate: WARN

@@ -13,4 +13,7 @@ spring:
 
 logging:
   level:
+    root: INFO
     com.loader.facv: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG

@@ -33,16 +33,16 @@ public class FacvFileLoaderService {
         this.repository = repository;
     }
 
-    public void loadAllConfiguredFiles() {
+    public long loadAllConfiguredFiles() {
         if (!properties.isEnabled()) {
             LOGGER.info("Loader disabled via loader.enabled=false");
-            return;
+            return 0L;
         }
 
         List<String> fileNames = properties.getFileNames();
         if (fileNames == null || fileNames.isEmpty()) {
             LOGGER.warn("No file names configured under loader.file-names");
-            return;
+            return 0L;
         }
 
         Path basePath = Paths.get(properties.getInputDirectory());
@@ -60,6 +60,7 @@ public class FacvFileLoaderService {
             totalInserted += loadSingleFile(filePath);
         }
         LOGGER.info("FACV load completed. Total rows inserted: {}", totalInserted);
+        return totalInserted;
     }
 
     private long loadSingleFile(Path filePath) {
