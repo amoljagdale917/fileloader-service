@@ -2,16 +2,14 @@ spring:
   application:
     name: facv-loader-service
   datasource:
-    url: jdbc:h2:mem:facvdb;DB_CLOSE_DELAY=-1;MODE=Oracle
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    # SQL Developer style Oracle connection for DEV
+    url: jdbc:oracle:thin:@//DEV_HOST:1521/DEV_SERVICE_NAME
+    username: DEV_DB_USER
+    password: DEV_DB_PASSWORD
+    driver-class-name: oracle.jdbc.OracleDriver
   sql:
     init:
-      mode: always
-  h2:
-    console:
-      enabled: true
+      mode: never
 
 loader:
   enabled: true

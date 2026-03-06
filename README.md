@@ -12,7 +12,7 @@ Spring Boot microservice (Java 8 + Spring Boot 2.7.x) that:
 - Spring JDBC
 - Lombok
 
-Note: For production DBs (for example Oracle), include your JDBC driver in `pom.xml` based on your environment policy.
+Oracle JDBC driver is already added in `pom.xml` (`ojdbc8`).
 
 ## Fixed-width Mapping
 - `BNK_NO` (3)
@@ -46,8 +46,8 @@ Important properties:
 - `loader.run-on-startup`: set `true` to load immediately on app start.
 
 Profiles:
-- `dev`: H2 in-memory DB (`application-dev.yml`)
-- `prod`: sample external DB configuration (`application-prod.yml`)
+- `dev`: Oracle DB configuration (`application-dev.yml`)
+- `prod`: Oracle DB configuration (`application-prod.yml`)
 
 Local folder structure example:
 - `hub/var/incoming`
@@ -80,8 +80,9 @@ IntelliJ Run Configuration:
 - Active profile: `dev` or `prod`
 
 ## DDL
-- H2 dev schema: `src/main/resources/schema-h2.sql`
 - Oracle-style sample: `sql/create_stg_hk_obs_facv.sql`
+- Create schema/user (DBA): `sql/01_create_schema_user_oracle.sql`
+- Create table (app schema): `sql/02_create_table_stg_hk_obs_facv_oracle.sql`
 
 ## Controller Endpoints
 - `POST /api/facv/load`: manually trigger loading of configured files.
