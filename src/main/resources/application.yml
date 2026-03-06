@@ -7,14 +7,16 @@ spring:
 loader:
   enabled: true
   run-on-startup: false
-  input-directory: /opt/loader/input
+  incoming-path: hub/var/incoming
+  success-path: hub/var/success
+  failed-path: hub/var/failed
   file-names:
     - CLFACV.txt
     - CLFACVHASE.txt
   charset: UTF-8
   batch-size: 1000
-  # End-of-day daily schedule (23:59)
-  schedule-cron: "0 59 23 * * *"
+  # Every 5 minutes (local testing)
+  schedule-cron: "0 */5 * * * *"
   schedule-zone: Asia/Hong_Kong
 
 logging:

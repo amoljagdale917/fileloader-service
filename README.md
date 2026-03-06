@@ -33,16 +33,24 @@ Each line is parsed as fixed-width and preserved as-is (including spaces).
 Main config: `src/main/resources/application.yml`
 
 Important properties:
-- `loader.input-directory`: folder containing files.
+- `loader.incoming-path`: folder where input files are dropped.
+- `loader.success-path`: folder where successfully processed files are moved.
+- `loader.failed-path`: folder where failed files are moved.
+- Processed files are renamed while moving: `<name>_ddMMyyyy_HHmmssSSS.<ext>`
 - `loader.file-names`: includes `CLFACV.txt`, `CLFACVHASE.txt`.
 - `loader.batch-size`: batch insert size (default `1000`).
-- `loader.schedule-cron`: daily schedule (default `23:59`).
+- `loader.schedule-cron`: scheduler cron (currently set to every 5 minutes for local testing).
 - `loader.schedule-zone`: scheduler timezone.
 - `loader.run-on-startup`: set `true` to load immediately on app start.
 
 Profiles:
 - `dev`: H2 in-memory DB (`application-dev.yml`)
 - `prod`: sample external DB configuration (`application-prod.yml`)
+
+Local folder structure example:
+- `hub/var/incoming`
+- `hub/var/success`
+- `hub/var/failed`
 
 ## Run
 ```bash
@@ -61,6 +69,11 @@ mvn spring-boot:run -Dspring-boot.run.profiles=prod
 ## Controller Endpoints
 - `POST /api/facv/load`: manually trigger loading of configured files.
 - `GET /api/facv/health`: service health response.
+
+## Postman
+- Collection: `postman/FACV-Loader-Service.postman_collection.json`
+- Environment (local): `postman/FACV-Loader-Local.postman_environment.json`
+- Environment (prod template): `postman/FACV-Loader-Prod-Template.postman_environment.json`
 
 ## Global Exception Handler
 - `@RestControllerAdvice` is added for consistent API error response.
