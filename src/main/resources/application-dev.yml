@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: facv-loader-service
   datasource:
     url: jdbc:h2:mem:facvdb;DB_CLOSE_DELAY=-1;MODE=Oracle
     username: sa
@@ -12,14 +14,24 @@ spring:
       enabled: true
 
 loader:
+  enabled: true
+  run-on-startup: false
   # Local machine default (no export needed)
   incoming-path: ${user.home}/Documents/hub/var/incoming
   success-path: ${user.home}/Documents/hub/var/success
   failed-path: ${user.home}/Documents/hub/var/failed
+  file-names:
+    - CLFACV.txt
+    - CLFACVHASE.txt
+  charset: UTF-8
+  batch-size: 1000
   # Every 5 minutes for testing
   schedule-cron: "0 */5 * * * *"
+  schedule-zone: Asia/Hong_Kong
 
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
   level:
     root: INFO
     com.loader.facv: DEBUG

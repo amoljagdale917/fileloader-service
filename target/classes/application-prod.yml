@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: facv-loader-service
   datasource:
     # Example Oracle connection. Replace with your real values.
     url: jdbc:oracle:thin:@//HOST:1521/SERVICE_NAME
@@ -10,14 +12,24 @@ spring:
       mode: never
 
 loader:
+  enabled: true
+  run-on-startup: false
   # Production directories
   incoming-path: /hub/var/incoming
   success-path: /hub/var/success
   failed-path: /hub/var/failed
+  file-names:
+    - CLFACV.txt
+    - CLFACVHASE.txt
+  charset: UTF-8
+  batch-size: 1000
   # End-of-day scheduler
   schedule-cron: "0 59 23 * * *"
+  schedule-zone: Asia/Hong_Kong
 
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
   level:
     root: INFO
     com.loader.facv: INFO

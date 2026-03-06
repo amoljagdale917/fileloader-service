@@ -30,7 +30,9 @@ Note: For production DBs (for example Oracle), include your JDBC driver in `pom.
 Each line is parsed as fixed-width and preserved as-is (including spaces).
 
 ## Configuration
-Main config: `src/main/resources/application.yml`
+Profile-based config files:
+- `src/main/resources/application-dev.yml`
+- `src/main/resources/application-prod.yml`
 
 Important properties:
 - `loader.incoming-path`: folder where input files are dropped.
@@ -64,13 +66,18 @@ Environment configuration (no export needed):
 
 ## Run
 ```bash
-mvn clean spring-boot:run
+mvn clean spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 Run with production profile:
 ```bash
 mvn spring-boot:run -Dspring-boot.run.profiles=prod
 ```
+
+IntelliJ Run Configuration:
+- Main class: `com.loader.facv.FacvLoaderApplication`
+- JDK: `1.8`
+- Active profile: `dev` or `prod`
 
 ## DDL
 - H2 dev schema: `src/main/resources/schema-h2.sql`
