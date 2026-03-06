@@ -9,6 +9,14 @@ spring:
     init:
       mode: never
 
+loader:
+  # Production directories
+  incoming-path: /hub/var/incoming
+  success-path: /hub/var/success
+  failed-path: /hub/var/failed
+  # End-of-day scheduler
+  schedule-cron: "0 59 23 * * *"
+
 logging:
   level:
     root: INFO

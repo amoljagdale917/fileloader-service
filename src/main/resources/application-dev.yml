@@ -11,6 +11,14 @@ spring:
     console:
       enabled: true
 
+loader:
+  # Local machine default (no export needed)
+  incoming-path: ${user.home}/Documents/hub/var/incoming
+  success-path: ${user.home}/Documents/hub/var/success
+  failed-path: ${user.home}/Documents/hub/var/failed
+  # Every 5 minutes for testing
+  schedule-cron: "0 */5 * * * *"
+
 logging:
   level:
     root: INFO

@@ -52,15 +52,15 @@ Local folder structure example:
 - `hub/var/success`
 - `hub/var/failed`
 
-Path configuration (recommended):
-- Set `LOADER_BASE_PATH` and service uses:
-  - `${LOADER_BASE_PATH}/incoming`
-  - `${LOADER_BASE_PATH}/success`
-  - `${LOADER_BASE_PATH}/failed`
-- You can also set explicit vars:
-  - `LOADER_INCOMING_PATH`
-  - `LOADER_SUCCESS_PATH`
-  - `LOADER_FAILED_PATH`
+Environment configuration (no export needed):
+- `application-dev.yml`:
+  - `${user.home}/Documents/hub/var/incoming`
+  - `${user.home}/Documents/hub/var/success`
+  - `${user.home}/Documents/hub/var/failed`
+- `application-prod.yml`:
+  - `/hub/var/incoming`
+  - `/hub/var/success`
+  - `/hub/var/failed`
 
 ## Run
 ```bash

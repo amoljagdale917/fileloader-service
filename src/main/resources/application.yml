@@ -7,12 +7,9 @@ spring:
 loader:
   enabled: true
   run-on-startup: false
-  # Configure via env vars:
-  # LOADER_BASE_PATH=/hub/var (or /Users/<user>/Documents/hub/var for local)
-  # Optional overrides: LOADER_INCOMING_PATH, LOADER_SUCCESS_PATH, LOADER_FAILED_PATH
-  incoming-path: ${LOADER_INCOMING_PATH:${LOADER_BASE_PATH:hub/var}/incoming}
-  success-path: ${LOADER_SUCCESS_PATH:${LOADER_BASE_PATH:hub/var}/success}
-  failed-path: ${LOADER_FAILED_PATH:${LOADER_BASE_PATH:hub/var}/failed}
+  incoming-path: hub/var/incoming
+  success-path: hub/var/success
+  failed-path: hub/var/failed
   file-names:
     - CLFACV.txt
     - CLFACVHASE.txt
