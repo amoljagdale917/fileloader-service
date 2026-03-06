@@ -17,7 +17,7 @@ Note: For production DBs (for example Oracle), include your JDBC driver in `pom.
 ## Fixed-width Mapping
 - `BNK_NO` (3)
 - `CUST_ACCT_NO` (12)
-- `SYS_CODE` (3)
+- `SYS_COD` (3)
 - `REC_TYPE` (1)
 - `CUST_GP` (1)
 - `ITL_CUST_NO` (11)
@@ -25,9 +25,9 @@ Note: For production DBs (for example Oracle), include your JDBC driver in `pom.
 - `LMT_ID` (5)
 - `CUST_ID` (11)
 - `FILLER1` (7)
-- `MAINT_ACCT` (1)
+- `MAINT_ACT` (1)
 
-All columns are inserted as nullable (`blank -> null`).
+Each line is parsed as fixed-width and preserved as-is (including spaces).
 
 ## Configuration
 Main config: `src/main/resources/application.yml`

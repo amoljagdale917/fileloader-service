@@ -52,16 +52,14 @@ public class FixedWidthFacvParser {
     }
 
     private String extract(String source, int startInclusive, int endExclusive) {
-        String raw = source.substring(startInclusive, endExclusive);
-        String trimmed = raw.trim();
-        return trimmed.isEmpty() ? null : trimmed;
+        return source.substring(startInclusive, endExclusive);
     }
 
     public List<String> expectedColumnLengths() {
         List<String> lengths = new ArrayList<String>();
         lengths.add("BNK_NO(3)");
         lengths.add("CUST_ACCT_NO(12)");
-        lengths.add("SYS_CODE(3)");
+        lengths.add("SYS_COD(3)");
         lengths.add("REC_TYPE(1)");
         lengths.add("CUST_GP(1)");
         lengths.add("ITL_CUST_NO(11)");
@@ -69,7 +67,7 @@ public class FixedWidthFacvParser {
         lengths.add("LMT_ID(5)");
         lengths.add("CUST_ID(11)");
         lengths.add("FILLER1(7)");
-        lengths.add("MAINT_ACCT(1)");
+        lengths.add("MAINT_ACT(1)");
         return lengths;
     }
 }

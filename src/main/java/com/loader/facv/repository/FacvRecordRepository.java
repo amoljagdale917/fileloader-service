@@ -16,8 +16,8 @@ public class FacvRecordRepository {
 
     private static final String INSERT_SQL =
             "INSERT INTO STG_HK_OBS_FACV (" +
-                    "BNK_NO, CUST_ACCT_NO, SYS_CODE, REC_TYPE, CUST_GP, " +
-                    "ITL_CUST_NO, FILLER, LMT_ID, CUST_ID, FILLER1, MAINT_ACCT" +
+                    "BNK_NO, CUST_ACCT_NO, SYS_COD, REC_TYPE, CUST_GP, " +
+                    "ITL_CUST_NO, FILLER, LMT_ID, CUST_ID, FILLER1, MAINT_ACT" +
                     ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final JdbcTemplate jdbcTemplate;

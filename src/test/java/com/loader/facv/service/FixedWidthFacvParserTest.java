@@ -16,13 +16,13 @@ class FixedWidthFacvParserTest {
         Assertions.assertEquals("004", record.getBnkNo());
         Assertions.assertEquals("065017162001", record.getCustAcctNo());
         Assertions.assertEquals("CIF", record.getSysCode());
-        Assertions.assertNull(record.getRecType());
+        Assertions.assertEquals(" ", record.getRecType());
         Assertions.assertEquals("C", record.getCustGp());
         Assertions.assertEquals("00000000072", record.getItlCustNo());
-        Assertions.assertEquals("000000", record.getFiller());
+        Assertions.assertEquals(" 000000    ", record.getFiller());
         Assertions.assertEquals("DOD01", record.getLmtId());
         Assertions.assertEquals("00000000263", record.getCustId());
-        Assertions.assertNull(record.getFiller1());
-        Assertions.assertNull(record.getMaintAcct());
+        Assertions.assertEquals("       ", record.getFiller1());
+        Assertions.assertEquals(" ", record.getMaintAcct());
     }
 }
