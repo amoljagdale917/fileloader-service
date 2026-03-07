@@ -52,7 +52,11 @@ public class FixedWidthFacvParser {
     }
 
     private String extract(String source, int startInclusive, int endExclusive) {
-        return source.substring(startInclusive, endExclusive);
+        String value = source.substring(startInclusive, endExclusive);
+        if (value.trim().isEmpty()) {
+            return null;
+        }
+        return value;
     }
 
     public List<String> expectedColumnLengths() {
