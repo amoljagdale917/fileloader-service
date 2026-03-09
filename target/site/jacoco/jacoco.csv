@@ -1,0 +1,9 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+facv-loader-service,com.loader.facv.scheduler,FacvLoadScheduler,29,0,0,0,9,0,3,0,3,0
+facv-loader-service,com.loader.facv.service,FacvFileLoaderService,0,471,3,25,0,100,3,20,0,9
+facv-loader-service,com.loader.facv.service,FixedWidthFacvParser,50,154,0,10,13,31,1,10,1,5
+facv-loader-service,com.loader.facv,FacvLoaderApplication,37,0,2,0,13,0,6,0,5,0
+facv-loader-service,com.loader.facv,LoaderProperties,375,84,72,0,0,11,46,15,10,15
+facv-loader-service,com.loader.facv.model,FacvRecord,433,80,94,0,0,12,51,23,4,23
+facv-loader-service,com.loader.facv.repository,FacvRecordRepository,23,0,4,0,5,0,4,0,2,0
+facv-loader-service,com.loader.facv.repository,FacvRecordRepository.new BatchPreparedStatementSetter() {...},75,0,0,0,15,0,3,0,3,0

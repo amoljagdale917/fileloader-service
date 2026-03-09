@@ -65,8 +65,10 @@ class FixedWidthFacvParserTest {
     @Test
     void shouldTruncateLongLineToExpectedLength() {
         String baseLine = String.format("%-66s", "004065017162001CIF C00000000072 000000    DOD0100000000263");
+        System.out.println(baseLine);
         String line = baseLine + "EXTRA_TRAILING_TEXT";
         FacvRecord record = parser.parse(line);
+        System.out.println(line);
 
         Assertions.assertEquals("004", record.getBnkNo());
         Assertions.assertEquals("065017162001", record.getCustAcctNo());

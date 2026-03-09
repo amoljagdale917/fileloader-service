@@ -157,7 +157,7 @@ public class FacvFileLoaderService {
         String namePart = dotIndex > 0 ? originalFileName.substring(0, dotIndex) : originalFileName;
         String extPart = dotIndex > 0 ? originalFileName.substring(dotIndex) : "";
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = now();
         String baseWithDateTs = namePart + "_" + now.format(FILE_DATE) + "_" + now.format(FILE_TS);
         Path candidate = targetDirectory.resolve(baseWithDateTs + extPart);
         int counter = 1;
@@ -166,5 +166,9 @@ public class FacvFileLoaderService {
             counter++;
         }
         return candidate;
+    }
+
+    protected LocalDateTime now() {
+        return LocalDateTime.now();
     }
 }

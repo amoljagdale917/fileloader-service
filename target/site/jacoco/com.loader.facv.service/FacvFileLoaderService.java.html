@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FacvFileLoaderService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">facv-loader-service</a> &gt; <a href="index.source.html" class="el_package">com.loader.facv.service</a> &gt; <span class="el_source">FacvFileLoaderService.java</span></div><h1>FacvFileLoaderService.java</h1><pre class="source lang-java linenums">package com.loader.facv.service;
+
+import com.loader.facv.LoaderProperties;
+import com.loader.facv.model.FacvRecord;
+import com.loader.facv.repository.FacvRecordRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
+<span class="fc" id="L22">@Slf4j</span>
+@Service
+<span class="fc" id="L24">@RequiredArgsConstructor</span>
+public class FacvFileLoaderService {
+
+<span class="fc" id="L27">    private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern(&quot;ddMMyyyy&quot;);</span>
+<span class="fc" id="L28">    private static final DateTimeFormatter FILE_TS = DateTimeFormatter.ofPattern(&quot;HHmmssSSS&quot;);</span>
+
+    private final LoaderProperties properties;
+    private final FixedWidthFacvParser parser;
+    private final FacvRecordRepository repository;
+
+    public long loadAllConfiguredFiles() {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (!properties.isEnabled()) {</span>
+<span class="fc" id="L36">            log.info(&quot;Loader disabled via loader.enabled=false&quot;);</span>
+<span class="fc" id="L37">            return 0L;</span>
+        }
+
+<span class="fc" id="L40">        List&lt;String&gt; fileNames = properties.getFileNames();</span>
+<span class="pc bpc" id="L41" title="1 of 4 branches missed.">        if (fileNames == null || fileNames.isEmpty()) {</span>
+<span class="fc" id="L42">            log.warn(&quot;No file names configured under loader.file-names&quot;);</span>
+<span class="fc" id="L43">            return 0L;</span>
+        }
+
+<span class="fc" id="L46">        Path incomingPath = Paths.get(properties.getIncomingPath());</span>
+<span class="fc" id="L47">        Path successPath = Paths.get(properties.getSuccessPath());</span>
+<span class="fc" id="L48">        Path failedPath = Paths.get(properties.getFailedPath());</span>
+<span class="fc" id="L49">        ensureDirectory(incomingPath);</span>
+<span class="fc" id="L50">        ensureDirectory(successPath);</span>
+<span class="fc" id="L51">        ensureDirectory(failedPath);</span>
+
+<span class="fc" id="L53">        log.info(&quot;FACV load started from incoming directory: {}&quot;, incomingPath.toAbsolutePath());</span>
+<span class="fc" id="L54">        log.info(&quot;Success directory: {}&quot;, successPath.toAbsolutePath());</span>
+<span class="fc" id="L55">        log.info(&quot;Failed directory: {}&quot;, failedPath.toAbsolutePath());</span>
+<span class="fc" id="L56">        log.info(&quot;Expected fixed-width map: {}&quot;, parser.expectedColumnLengths());</span>
+
+<span class="fc" id="L58">        long totalInserted = 0L;</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        for (String fileName : fileNames) {</span>
+<span class="fc" id="L60">            Path filePath = incomingPath.resolve(fileName);</span>
+<span class="pc bpc" id="L61" title="1 of 4 branches missed.">            if (!Files.exists(filePath) || !Files.isRegularFile(filePath)) {</span>
+<span class="fc" id="L62">                log.warn(&quot;File not found or not regular file, skipping: {}&quot;, filePath.toAbsolutePath());</span>
+<span class="fc" id="L63">                continue;</span>
+            }
+
+            try {
+<span class="fc" id="L67">                long inserted = loadSingleFile(filePath);</span>
+<span class="fc" id="L68">                totalInserted += inserted;</span>
+<span class="fc" id="L69">                Path movedTo = moveFile(filePath, successPath);</span>
+<span class="fc" id="L70">                log.info(&quot;File moved to success: {}&quot;, movedTo.getFileName());</span>
+<span class="fc" id="L71">            } catch (RuntimeException ex) {</span>
+<span class="fc" id="L72">                log.error(&quot;Processing failed for file: {}. Moving to failed folder.&quot;, fileName, ex);</span>
+<span class="fc" id="L73">                moveToFailedSafely(filePath, failedPath);</span>
+<span class="fc" id="L74">            }</span>
+<span class="fc" id="L75">        }</span>
+<span class="fc" id="L76">        log.info(&quot;FACV load completed. Total rows inserted: {}&quot;, totalInserted);</span>
+<span class="fc" id="L77">        return totalInserted;</span>
+    }
+
+    private long loadSingleFile(Path filePath) {
+<span class="fc" id="L81">        Charset charset = Charset.forName(properties.getCharset());</span>
+<span class="fc" id="L82">        int batchSize = Math.max(properties.getBatchSize(), 1);</span>
+<span class="fc" id="L83">        List&lt;FacvRecord&gt; buffer = new ArrayList&lt;FacvRecord&gt;(batchSize);</span>
+
+<span class="fc" id="L85">        long insertedRows = 0L;</span>
+<span class="fc" id="L86">        long lineNumber = 0L;</span>
+<span class="fc" id="L87">        long skippedBlankLines = 0L;</span>
+
+<span class="fc" id="L89">        log.info(&quot;Processing file: {}&quot;, filePath.toAbsolutePath());</span>
+<span class="fc" id="L90">        try (BufferedReader reader = Files.newBufferedReader(filePath, charset)) {</span>
+            String line;
+<span class="fc bfc" id="L92" title="All 2 branches covered.">            while ((line = reader.readLine()) != null) {</span>
+<span class="fc" id="L93">                lineNumber++;</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">                if (line.trim().isEmpty()) {</span>
+<span class="fc" id="L95">                    skippedBlankLines++;</span>
+<span class="fc" id="L96">                    continue;</span>
+                }
+
+<span class="fc" id="L99">                FacvRecord record = parser.parse(line);</span>
+<span class="fc" id="L100">                buffer.add(record);</span>
+
+<span class="fc bfc" id="L102" title="All 2 branches covered.">                if (buffer.size() &gt;= batchSize) {</span>
+<span class="fc" id="L103">                    repository.batchInsert(buffer);</span>
+<span class="fc" id="L104">                    insertedRows += buffer.size();</span>
+<span class="fc" id="L105">                    buffer.clear();</span>
+                }
+<span class="fc" id="L107">            }</span>
+
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">            if (!buffer.isEmpty()) {</span>
+<span class="fc" id="L110">                repository.batchInsert(buffer);</span>
+<span class="fc" id="L111">                insertedRows += buffer.size();</span>
+<span class="fc" id="L112">                buffer.clear();</span>
+            }
+<span class="fc" id="L114">        } catch (IOException ex) {</span>
+<span class="fc" id="L115">            throw new IllegalStateException(&quot;Failed to read file: &quot; + filePath.toAbsolutePath(), ex);</span>
+<span class="fc" id="L116">        }</span>
+
+<span class="fc" id="L118">        log.info(&quot;Completed file: {} | lines read: {} | inserted: {} | skipped blank: {}&quot;,</span>
+<span class="fc" id="L119">                filePath.getFileName(), lineNumber, insertedRows, skippedBlankLines);</span>
+<span class="fc" id="L120">        return insertedRows;</span>
+    }
+
+    private void ensureDirectory(Path dirPath) {
+        try {
+<span class="fc" id="L125">            Files.createDirectories(dirPath);</span>
+<span class="fc" id="L126">        } catch (IOException ex) {</span>
+<span class="fc" id="L127">            throw new IllegalStateException(&quot;Failed to create/access directory: &quot; + dirPath.toAbsolutePath(), ex);</span>
+<span class="fc" id="L128">        }</span>
+<span class="fc" id="L129">    }</span>
+
+    private void moveToFailedSafely(Path sourceFile, Path failedPath) {
+<span class="fc bfc" id="L132" title="All 2 branches covered.">        if (!Files.exists(sourceFile)) {</span>
+<span class="fc" id="L133">            log.warn(&quot;Unable to move to failed folder. Source file no longer exists: {}&quot;, sourceFile.toAbsolutePath());</span>
+<span class="fc" id="L134">            return;</span>
+        }
+        try {
+<span class="fc" id="L137">            Path movedTo = moveFile(sourceFile, failedPath);</span>
+<span class="fc" id="L138">            log.info(&quot;File moved to failed: {}&quot;, movedTo.getFileName());</span>
+<span class="fc" id="L139">        } catch (RuntimeException moveEx) {</span>
+<span class="fc" id="L140">            log.error(&quot;Failed to move file to failed folder: {}&quot;, sourceFile.toAbsolutePath(), moveEx);</span>
+<span class="fc" id="L141">        }</span>
+<span class="fc" id="L142">    }</span>
+
+    private Path moveFile(Path sourceFile, Path targetDirectory) {
+<span class="fc" id="L145">        Path targetFile = resolveUniqueTarget(targetDirectory, sourceFile.getFileName().toString());</span>
+        try {
+<span class="fc" id="L147">            Files.move(sourceFile, targetFile, StandardCopyOption.REPLACE_EXISTING);</span>
+<span class="fc" id="L148">            return targetFile;</span>
+<span class="fc" id="L149">        } catch (IOException ex) {</span>
+<span class="fc" id="L150">            throw new IllegalStateException(&quot;Failed to move file from &quot;</span>
+<span class="fc" id="L151">                    + sourceFile.toAbsolutePath() + &quot; to &quot; + targetFile.toAbsolutePath(), ex);</span>
+        }
+    }
+
+    private Path resolveUniqueTarget(Path targetDirectory, String originalFileName) {
+<span class="fc" id="L156">        int dotIndex = originalFileName.lastIndexOf('.');</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">        String namePart = dotIndex &gt; 0 ? originalFileName.substring(0, dotIndex) : originalFileName;</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        String extPart = dotIndex &gt; 0 ? originalFileName.substring(dotIndex) : &quot;&quot;;</span>
+
+<span class="fc" id="L160">        LocalDateTime now = now();</span>
+<span class="fc" id="L161">        String baseWithDateTs = namePart + &quot;_&quot; + now.format(FILE_DATE) + &quot;_&quot; + now.format(FILE_TS);</span>
+<span class="fc" id="L162">        Path candidate = targetDirectory.resolve(baseWithDateTs + extPart);</span>
+<span class="fc" id="L163">        int counter = 1;</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">        while (Files.exists(candidate)) {</span>
+<span class="fc" id="L165">            candidate = targetDirectory.resolve(baseWithDateTs + &quot;_&quot; + counter + extPart);</span>
+<span class="fc" id="L166">            counter++;</span>
+        }
+<span class="fc" id="L168">        return candidate;</span>
+    }
+
+    protected LocalDateTime now() {
+<span class="fc" id="L172">        return LocalDateTime.now();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

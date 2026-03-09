@@ -81,15 +81,13 @@ IntelliJ Run Configuration:
 ## DDL
 - Manual script: `sql/create_stg_hk_obs_facv.sql`
 
-## Controller Endpoints
-- `POST /api/facv/load`: manually trigger loading of configured files.
-- `GET /api/facv/health`: service health response.
+## Runtime Trigger
+- Loader runs via scheduler (`loader.schedule-cron`) and optional startup trigger (`loader.run-on-startup=true`).
+- No REST controller is exposed.
 
 ## Postman
-- Collection: `postman/FACV-Loader-Service.postman_collection.json`
-- Environment (local): `postman/FACV-Loader-Local.postman_environment.json`
-- Environment (prod template): `postman/FACV-Loader-Prod-Template.postman_environment.json`
+- Not required because this service has no API endpoints.
 
-## Global Exception Handler
-- `@RestControllerAdvice` is added for consistent API error response.
-- Error payload fields: `timestamp`, `status`, `error`, `message`, `path`.
+## Exception Handling
+- File-level processing errors are caught per file; failed files are moved to the failed folder.
+- Scheduler and startup triggers catch/log runtime exceptions to keep service alive.

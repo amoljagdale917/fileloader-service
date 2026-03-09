@@ -16,6 +16,11 @@ public class FacvLoadScheduler {
     @Scheduled(cron = "${loader.schedule-cron}", zone = "${loader.schedule-zone}")
     public void runDailyLoad() {
         log.info("Scheduler triggered FACV load job");
-        loaderService.loadAllConfiguredFiles();
+        try {
+            long insertedRows = loaderService.loadAllConfiguredFiles();
+            log.info("Scheduler FACV load completed. insertedRows={}", insertedRows);
+        } catch (RuntimeException ex) {
+            log.error("Scheduler FACV load failed.", ex);
+        }
     }
 }

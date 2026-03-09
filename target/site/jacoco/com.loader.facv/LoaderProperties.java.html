@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoaderProperties.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">facv-loader-service</a> &gt; <a href="index.source.html" class="el_package">com.loader.facv</a> &gt; <span class="el_source">LoaderProperties.java</span></div><h1>LoaderProperties.java</h1><pre class="source lang-java linenums">package com.loader.facv;
+
+import java.util.ArrayList;
+import java.util.List;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+<span class="pc bnc" id="L8" title="All 72 branches missed.">@Data</span>
+@ConfigurationProperties(prefix = &quot;loader&quot;)
+public class LoaderProperties {
+
+<span class="fc" id="L12">    private boolean enabled = true;</span>
+<span class="pc" id="L13">    private boolean runOnStartup = false;</span>
+<span class="fc" id="L14">    private String incomingPath = &quot;hub/var/incoming&quot;;</span>
+<span class="fc" id="L15">    private String successPath = &quot;hub/var/success&quot;;</span>
+<span class="fc" id="L16">    private String failedPath = &quot;hub/var/failed&quot;;</span>
+<span class="fc" id="L17">    private List&lt;String&gt; fileNames = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L18">    private String charset = &quot;UTF-8&quot;;</span>
+<span class="fc" id="L19">    private int batchSize = 1000;</span>
+<span class="pc" id="L20">    private String scheduleCron = &quot;0 59 23 * * *&quot;;</span>
+<span class="pc" id="L21">    private String scheduleZone = &quot;Asia/Hong_Kong&quot;;</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
