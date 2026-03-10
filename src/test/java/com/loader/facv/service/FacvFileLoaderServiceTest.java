@@ -347,6 +347,26 @@ class FacvFileLoaderServiceTest {
         return properties;
     }
 
+    private static FacvFileLoaderService newService(
+            TestLoaderProperties properties,
+            FixedWidthFacvParser parser,
+            FacvRecordRepository repository
+    ) {
+        FacvFileLoaderService service = new FacvFileLoaderService(parser, repository);
+        applyProperties(service, properties);
+        return service;
+    }
+
+    private static void applyProperties(FacvFileLoaderService service, TestLoaderProperties properties) {
+        ReflectionTestUtils.setField(service, "enabled", properties.isEnabled());
+        ReflectionTestUtils.setField(service, "incomingPath", properties.getIncomingPath());
+        ReflectionTestUtils.setField(service, "successPath", properties.getSuccessPath());
+        ReflectionTestUtils.setField(service, "failedPath", properties.getFailedPath());
+        ReflectionTestUtils.setField(service, "fileNames", properties.getFileNames());
+        ReflectionTestUtils.setField(service, "charset", properties.getCharset());
+        ReflectionTestUtils.setField(service, "batchSize", properties.getBatchSize());
+    }
+
     private static FacvRecord record(String key) {
         FacvRecord record = new FacvRecord();
         record.setBnkNo("00" + key);
@@ -376,13 +396,81 @@ class FacvFileLoaderServiceTest {
                 FacvRecordRepository repository,
                 LocalDateTime fixedNow
         ) {
-            super(properties, parser, repository);
+            super(parser, repository);
+            applyProperties(this, properties);
             this.fixedNow = fixedNow;
         }
 
         @Override
         protected LocalDateTime now() {
             return fixedNow;
+        }
+    }
+
+    private static final class TestLoaderProperties {
+
+        private boolean enabled;
+        private String incomingPath;
+        private String successPath;
+        private String failedPath;
+        private List<String> fileNames;
+        private String charset;
+        private int batchSize;
+
+        private boolean isEnabled() {
+            return enabled;
+        }
+
+        private void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        private String getIncomingPath() {
+            return incomingPath;
+        }
+
+        private void setIncomingPath(String incomingPath) {
+            this.incomingPath = incomingPath;
+        }
+
+        private String getSuccessPath() {
+            return successPath;
+        }
+
+        private void setSuccessPath(String successPath) {
+            this.successPath = successPath;
+        }
+
+        private String getFailedPath() {
+            return failedPath;
+        }
+
+        private void setFailedPath(String failedPath) {
+            this.failedPath = failedPath;
+        }
+
+        private List<String> getFileNames() {
+            return fileNames;
+        }
+
+        private void setFileNames(List<String> fileNames) {
+            this.fileNames = fileNames;
+        }
+
+        private String getCharset() {
+            return charset;
+        }
+
+        private void setCharset(String charset) {
+            this.charset = charset;
+        }
+
+        private int getBatchSize() {
+            return batchSize;
+        }
+
+        private void setBatchSize(int batchSize) {
+            this.batchSize = batchSize;
         }
     }
 }
