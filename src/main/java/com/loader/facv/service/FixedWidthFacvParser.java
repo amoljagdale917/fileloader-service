@@ -53,10 +53,11 @@ public class FixedWidthFacvParser {
 
     private String extract(String source, int startInclusive, int endExclusive) {
         String value = source.substring(startInclusive, endExclusive);
-        if (value.trim().isEmpty()) {
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
             return null;
         }
-        return value;
+        return trimmed;
     }
 
     public List<String> expectedColumnLengths() {

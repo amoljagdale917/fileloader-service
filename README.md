@@ -26,7 +26,8 @@ Spring Boot microservice (Java 8 + Spring Boot 2.7.x) that:
 - `FILLER1` (7)
 - `MAINT_ACT` (1)
 
-Each line is parsed as fixed-width and preserved as-is (including spaces).
+Each field is parsed from fixed-width positions, then trimmed at start/end before insert.
+Internal spaces between characters are preserved.
 
 ## Configuration
 Profile-based config files:

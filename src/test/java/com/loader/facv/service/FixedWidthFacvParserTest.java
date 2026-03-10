@@ -19,7 +19,7 @@ class FixedWidthFacvParserTest {
         Assertions.assertNull(record.getRecType());
         Assertions.assertEquals("C", record.getCustGp());
         Assertions.assertEquals("00000000072", record.getItlCustNo());
-        Assertions.assertEquals(" 000000    ", record.getFiller());
+        Assertions.assertEquals("000000", record.getFiller());
         Assertions.assertEquals("DOD01", record.getLmtId());
         Assertions.assertEquals("00000000263", record.getCustId());
         Assertions.assertNull(record.getFiller1());
@@ -37,7 +37,7 @@ class FixedWidthFacvParserTest {
         Assertions.assertNull(record.getRecType());
         Assertions.assertEquals("C", record.getCustGp());
         Assertions.assertEquals("00000000073", record.getItlCustNo());
-        Assertions.assertEquals(" 000000    ", record.getFiller());
+        Assertions.assertEquals("000000", record.getFiller());
         Assertions.assertEquals("DOD01", record.getLmtId());
         Assertions.assertEquals("00000000263", record.getCustId());
         Assertions.assertNull(record.getFiller1());
@@ -74,7 +74,7 @@ class FixedWidthFacvParserTest {
         Assertions.assertNull(record.getRecType());
         Assertions.assertEquals("C", record.getCustGp());
         Assertions.assertEquals("00000000072", record.getItlCustNo());
-        Assertions.assertEquals(" 000000    ", record.getFiller());
+        Assertions.assertEquals("000000", record.getFiller());
         Assertions.assertEquals("DOD01", record.getLmtId());
         Assertions.assertEquals("00000000263", record.getCustId());
         Assertions.assertNull(record.getFiller1());
@@ -96,5 +96,54 @@ class FixedWidthFacvParserTest {
         Assertions.assertNull(record.getCustId());
         Assertions.assertNull(record.getFiller1());
         Assertions.assertNull(record.getMaintAcct());
+    }
+
+    @Test
+    void shouldTrimOnlyStartAndEndSpacesAndKeepMiddleSpaces() {
+        String line =
+                "004" +
+                "065017162001" +
+                "CIF" +
+                " " +
+                "C" +
+                "00000000072" +
+                " AB CD     " +
+                "DOD01" +
+                "00000000263" +
+                "       " +
+                " ";
+        FacvRecord record = parser.parse(line);
+
+        Assertions.assertEquals("AB CD", record.getFiller());
+    }
+
+    @Test
+    void shouldTrimAllFieldsAndKeepInnerSpaces() {
+        String line =
+                " 04" +          // BNK_NO(3)
+                "12345678901 " + // CUST_ACCT_NO(12)
+                " AB" +          // SYS_COD(3)
+                "R" +            // REC_TYPE(1)
+                "C" +            // CUST_GP(1)
+                " 0000000007" +  // ITL_CUST_NO(11)
+                " A B C     " +  // FILLER(11)
+                " LM1 " +        // LMT_ID(5)
+                " 000000123 " +  // CUST_ID(11)
+                "  X Y  " +      // FILLER1(7)
+                "M";             // MAINT_ACT(1)
+
+        FacvRecord record = parser.parse(line);
+
+        Assertions.assertEquals("04", record.getBnkNo());
+        Assertions.assertEquals("12345678901", record.getCustAcctNo());
+        Assertions.assertEquals("AB", record.getSysCode());
+        Assertions.assertEquals("R", record.getRecType());
+        Assertions.assertEquals("C", record.getCustGp());
+        Assertions.assertEquals("0000000007", record.getItlCustNo());
+        Assertions.assertEquals("A B C", record.getFiller());
+        Assertions.assertEquals("LM1", record.getLmtId());
+        Assertions.assertEquals("000000123", record.getCustId());
+        Assertions.assertEquals("X Y", record.getFiller1());
+        Assertions.assertEquals("M", record.getMaintAcct());
     }
 }
