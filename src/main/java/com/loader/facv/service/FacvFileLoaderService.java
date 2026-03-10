@@ -1,12 +1,3 @@
-package com.loader.facv.service;
-
-import com.loader.facv.LoaderProperties;
-import com.loader.facv.model.FacvRecord;
-import com.loader.facv.repository.FacvRecordRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -19,6 +10,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.loader.facv.model.FacvRecord;
+import com.loader.facv.repository.FacvRecordRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -27,25 +25,38 @@ public class FacvFileLoaderService {
     private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("ddMMyyyy");
     private static final DateTimeFormatter FILE_TS = DateTimeFormatter.ofPattern("HHmmssSSS");
 
-    private final LoaderProperties properties;
     private final FixedWidthFacvParser parser;
     private final FacvRecordRepository repository;
+    @Value("${loader.enabled:true}")
+    private boolean enabled;
+    @Value("${loader.incoming-path:hub/var/incoming}")
+    private String incomingPath;
+    @Value("${loader.success-path:hub/var/success}")
+    private String successPath;
+    @Value("${loader.failed-path:hub/var/failed}")
+    private String failedPath;
+    @Value("${loader.file-names:}")
+    private List<String> fileNames = new ArrayList<String>();
+    @Value("${loader.charset:UTF-8}")
+    private String charset;
+    @Value("${loader.batch-size:1000}")
+    private int batchSize;
 
     public long loadAllConfiguredFiles() {
-        if (!properties.isEnabled()) {
+        if (!enabled) {
             log.info("Loader disabled via loader.enabled=false");
             return 0L;
         }
 
-        List<String> fileNames = properties.getFileNames();
-        if (fileNames == null || fileNames.isEmpty()) {
+        List<String> configuredFileNames = fileNames;
+        if (configuredFileNames == null || configuredFileNames.isEmpty()) {
             log.warn("No file names configured under loader.file-names");
             return 0L;
         }
 
-        Path incomingPath = Paths.get(properties.getIncomingPath());
-        Path successPath = Paths.get(properties.getSuccessPath());
-        Path failedPath = Paths.get(properties.getFailedPath());
+        Path incomingPath = Paths.get(this.incomingPath);
+        Path successPath = Paths.get(this.successPath);
+        Path failedPath = Paths.get(this.failedPath);
         ensureDirectory(incomingPath);
         ensureDirectory(successPath);
         ensureDirectory(failedPath);
@@ -56,7 +67,7 @@ public class FacvFileLoaderService {
         log.info("Expected fixed-width map: {}", parser.expectedColumnLengths());
 
         long totalInserted = 0L;
-        for (String fileName : fileNames) {
+        for (String fileName : configuredFileNames) {
             Path filePath = incomingPath.resolve(fileName);
             if (!Files.exists(filePath) || !Files.isRegularFile(filePath)) {
                 log.warn("File not found or not regular file, skipping: {}", filePath.toAbsolutePath());
@@ -78,8 +89,8 @@ public class FacvFileLoaderService {
     }
 
     private long loadSingleFile(Path filePath) {
-        Charset charset = Charset.forName(properties.getCharset());
-        int batchSize = Math.max(properties.getBatchSize(), 1);
+        Charset charset = Charset.forName(this.charset);
+        int batchSize = Math.max(this.batchSize, 1);
         List<FacvRecord> buffer = new ArrayList<FacvRecord>(batchSize);
 
         long insertedRows = 0L;

@@ -2,17 +2,16 @@ package com.loader.facv;
 
 import com.loader.facv.service.FacvFileLoaderService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Slf4j
 @SpringBootApplication
 @EnableScheduling
-@EnableConfigurationProperties(LoaderProperties.class)
 public class FacvLoaderApplication {
 
     public static void main(String[] args) {
@@ -20,9 +19,12 @@ public class FacvLoaderApplication {
     }
 
     @Bean
-    public CommandLineRunner commandLineRunner(FacvFileLoaderService loaderService, LoaderProperties properties) {
+    public CommandLineRunner commandLineRunner(
+            FacvFileLoaderService loaderService,
+            @Value("${loader.run-on-startup:false}") boolean runOnStartup
+    ) {
         return args -> {
-            if (properties.isRunOnStartup()) {
+            if (runOnStartup) {
                 try {
                     log.info("Startup load is enabled. Running FACV load job.");
                     long insertedRows = loaderService.loadAllConfiguredFiles();
