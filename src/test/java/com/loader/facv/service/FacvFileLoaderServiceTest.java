@@ -13,7 +13,6 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,13 +33,11 @@ class FacvFileLoaderServiceTest {
 
     @Test
     void shouldReturnZeroWhenLoaderIsDisabled(@TempDir Path tempDir) {
-        TestLoaderProperties properties = baseProperties(tempDir);
-        properties.setEnabled(false);
-        properties.setFileNames(Arrays.asList("CLFACV.txt"));
-
         FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(
+                tempDir, parser, repository, false, Arrays.asList("CLFACV.txt"), 1000
+        );
 
         long inserted = service.loadAllConfiguredFiles();
 
@@ -51,12 +48,11 @@ class FacvFileLoaderServiceTest {
 
     @Test
     void shouldReturnZeroWhenNoFileNamesConfigured(@TempDir Path tempDir) {
-        TestLoaderProperties properties = baseProperties(tempDir);
-        properties.setFileNames(Collections.<String>emptyList());
-
         FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(
+                tempDir, parser, repository, true, Collections.<String>emptyList(), 1000
+        );
 
         long inserted = service.loadAllConfiguredFiles();
 
@@ -67,12 +63,9 @@ class FacvFileLoaderServiceTest {
 
     @Test
     void shouldReturnZeroWhenFileNamesIsNull(@TempDir Path tempDir) {
-        TestLoaderProperties properties = baseProperties(tempDir);
-        properties.setFileNames(null);
-
         FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(tempDir, parser, repository, true, null, 1000);
 
         long inserted = service.loadAllConfiguredFiles();
 
@@ -83,20 +76,19 @@ class FacvFileLoaderServiceTest {
 
     @Test
     void shouldSkipMissingFileAndReturnZero(@TempDir Path tempDir) {
-        TestLoaderProperties properties = baseProperties(tempDir);
-        properties.setFileNames(Arrays.asList("CLFACV.txt"));
-
         FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
         when(parser.expectedColumnLengths()).thenReturn(Collections.singletonList("BNK_NO(3)"));
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(
+                tempDir, parser, repository, true, Arrays.asList("CLFACV.txt"), 1000
+        );
 
         long inserted = service.loadAllConfiguredFiles();
 
         Assertions.assertEquals(0L, inserted);
-        Assertions.assertTrue(Files.isDirectory(Paths.get(properties.getIncomingPath())));
-        Assertions.assertTrue(Files.isDirectory(Paths.get(properties.getSuccessPath())));
-        Assertions.assertTrue(Files.isDirectory(Paths.get(properties.getFailedPath())));
+        Assertions.assertTrue(Files.isDirectory(incomingDir(tempDir)));
+        Assertions.assertTrue(Files.isDirectory(successDir(tempDir)));
+        Assertions.assertTrue(Files.isDirectory(failedDir(tempDir)));
         verify(parser).expectedColumnLengths();
         verify(parser, never()).parse(anyString());
         verify(repository, never()).batchInsert(anyList());
@@ -104,16 +96,14 @@ class FacvFileLoaderServiceTest {
 
     @Test
     void shouldSkipPathWhenItIsNotARegularFile(@TempDir Path tempDir) throws IOException {
-        TestLoaderProperties properties = baseProperties(tempDir);
-        properties.setFileNames(Arrays.asList("CLFACV.txt"));
-
-        Path incomingDir = Paths.get(properties.getIncomingPath());
-        Files.createDirectories(incomingDir.resolve("CLFACV.txt"));
+        Files.createDirectories(incomingDir(tempDir).resolve("CLFACV.txt"));
 
         FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
         when(parser.expectedColumnLengths()).thenReturn(Collections.singletonList("BNK_NO(3)"));
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(
+                tempDir, parser, repository, true, Arrays.asList("CLFACV.txt"), 1000
+        );
 
         long inserted = service.loadAllConfiguredFiles();
 
@@ -125,11 +115,7 @@ class FacvFileLoaderServiceTest {
 
     @Test
     void shouldLoadFileInBatchesAndMoveToSuccess(@TempDir Path tempDir) throws IOException {
-        TestLoaderProperties properties = baseProperties(tempDir);
-        properties.setBatchSize(2);
-        properties.setFileNames(Arrays.asList("CLFACV.txt"));
-
-        Path incomingFile = Paths.get(properties.getIncomingPath()).resolve("CLFACV.txt");
+        Path incomingFile = incomingDir(tempDir).resolve("CLFACV.txt");
         Files.createDirectories(incomingFile.getParent());
         Files.write(incomingFile, Arrays.asList("LINE-1", " ", "LINE-2", "LINE-3"), StandardCharsets.UTF_8);
 
@@ -145,7 +131,9 @@ class FacvFileLoaderServiceTest {
             return null;
         }).when(repository).batchInsert(anyList());
 
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(
+                tempDir, parser, repository, true, Arrays.asList("CLFACV.txt"), 2
+        );
 
         long inserted = service.loadAllConfiguredFiles();
 
@@ -153,23 +141,17 @@ class FacvFileLoaderServiceTest {
         Assertions.assertEquals(Arrays.asList(2, 1), batchSizes);
         Assertions.assertFalse(Files.exists(incomingFile));
 
-        Path successDir = Paths.get(properties.getSuccessPath());
-        Path failedDir = Paths.get(properties.getFailedPath());
-        Assertions.assertEquals(1L, countFiles(successDir));
-        Assertions.assertEquals(0L, countFiles(failedDir));
+        Assertions.assertEquals(1L, countFiles(successDir(tempDir)));
+        Assertions.assertEquals(0L, countFiles(failedDir(tempDir)));
 
-        String movedName = firstFileName(successDir);
+        String movedName = firstFileName(successDir(tempDir));
         Assertions.assertTrue(movedName.startsWith("CLFACV_"));
         Assertions.assertTrue(movedName.endsWith(".txt"));
     }
 
     @Test
     void shouldLoadFileWhenBatchEndsExactlyWithoutRemainder(@TempDir Path tempDir) throws IOException {
-        TestLoaderProperties properties = baseProperties(tempDir);
-        properties.setBatchSize(2);
-        properties.setFileNames(Arrays.asList("CLFACV.txt"));
-
-        Path incomingFile = Paths.get(properties.getIncomingPath()).resolve("CLFACV.txt");
+        Path incomingFile = incomingDir(tempDir).resolve("CLFACV.txt");
         Files.createDirectories(incomingFile.getParent());
         Files.write(incomingFile, Arrays.asList("LINE-1", "LINE-2"), StandardCharsets.UTF_8);
 
@@ -185,22 +167,21 @@ class FacvFileLoaderServiceTest {
             return null;
         }).when(repository).batchInsert(anyList());
 
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(
+                tempDir, parser, repository, true, Arrays.asList("CLFACV.txt"), 2
+        );
 
         long inserted = service.loadAllConfiguredFiles();
 
         Assertions.assertEquals(2L, inserted);
         Assertions.assertEquals(Arrays.asList(2), batchSizes);
-        Assertions.assertEquals(1L, countFiles(Paths.get(properties.getSuccessPath())));
-        Assertions.assertEquals(0L, countFiles(Paths.get(properties.getFailedPath())));
+        Assertions.assertEquals(1L, countFiles(successDir(tempDir)));
+        Assertions.assertEquals(0L, countFiles(failedDir(tempDir)));
     }
 
     @Test
     void shouldMoveFileToFailedWhenParsingFails(@TempDir Path tempDir) throws IOException {
-        TestLoaderProperties properties = baseProperties(tempDir);
-        properties.setFileNames(Arrays.asList("CLFACVHASE.txt"));
-
-        Path incomingFile = Paths.get(properties.getIncomingPath()).resolve("CLFACVHASE.txt");
+        Path incomingFile = incomingDir(tempDir).resolve("CLFACVHASE.txt");
         Files.createDirectories(incomingFile.getParent());
         Files.write(incomingFile, Arrays.asList("BAD-LINE"), StandardCharsets.UTF_8);
 
@@ -209,31 +190,40 @@ class FacvFileLoaderServiceTest {
         when(parser.parse(anyString())).thenThrow(new IllegalArgumentException("parse failed"));
 
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(
+                tempDir, parser, repository, true, Arrays.asList("CLFACVHASE.txt"), 1000
+        );
 
         long inserted = service.loadAllConfiguredFiles();
 
         Assertions.assertEquals(0L, inserted);
         verify(repository, never()).batchInsert(anyList());
-        Assertions.assertEquals(0L, countFiles(Paths.get(properties.getSuccessPath())));
-        Assertions.assertEquals(1L, countFiles(Paths.get(properties.getFailedPath())));
+        Assertions.assertEquals(0L, countFiles(successDir(tempDir)));
+        Assertions.assertEquals(1L, countFiles(failedDir(tempDir)));
         Assertions.assertFalse(Files.exists(incomingFile));
-        String movedName = firstFileName(Paths.get(properties.getFailedPath()));
+        String movedName = firstFileName(failedDir(tempDir));
         Assertions.assertTrue(movedName.startsWith("CLFACVHASE_"));
         Assertions.assertTrue(movedName.endsWith(".txt"));
     }
 
     @Test
     void shouldThrowWhenDirectoryPathPointsToAFile(@TempDir Path tempDir) throws IOException {
-        TestLoaderProperties properties = baseProperties(tempDir);
         Path incomingAsFile = tempDir.resolve("incoming-as-file");
         Files.write(incomingAsFile, Arrays.asList("X"), StandardCharsets.UTF_8);
-        properties.setIncomingPath(incomingAsFile.toString());
-        properties.setFileNames(Arrays.asList("CLFACV.txt"));
 
         FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(
+                parser,
+                repository,
+                true,
+                incomingAsFile.toString(),
+                successDir(tempDir).toString(),
+                failedDir(tempDir).toString(),
+                Arrays.asList("CLFACV.txt"),
+                "UTF-8",
+                1000
+        );
 
         IllegalStateException ex = Assertions.assertThrows(IllegalStateException.class, service::loadAllConfiguredFiles);
         Assertions.assertTrue(ex.getMessage().contains("Failed to create/access directory"));
@@ -241,13 +231,14 @@ class FacvFileLoaderServiceTest {
 
     @Test
     void shouldHandleMissingSourceInMoveToFailedSafely(@TempDir Path tempDir) throws Exception {
-        TestLoaderProperties properties = baseProperties(tempDir);
         FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(
+                tempDir, parser, repository, true, Arrays.asList("CLFACV.txt"), 1000
+        );
 
         Path missingSource = tempDir.resolve("missing.txt");
-        Path failedDir = Paths.get(properties.getFailedPath());
+        Path failedDir = failedDir(tempDir);
         Files.createDirectories(failedDir);
 
         Method method = FacvFileLoaderService.class.getDeclaredMethod("moveToFailedSafely", Path.class, Path.class);
@@ -259,10 +250,11 @@ class FacvFileLoaderServiceTest {
 
     @Test
     void shouldHandleMoveFailureInsideMoveToFailedSafely(@TempDir Path tempDir) throws Exception {
-        TestLoaderProperties properties = baseProperties(tempDir);
         FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(
+                tempDir, parser, repository, true, Arrays.asList("CLFACV.txt"), 1000
+        );
 
         Path source = tempDir.resolve("CLFACV.txt");
         Files.write(source, Arrays.asList("X"), StandardCharsets.UTF_8);
@@ -279,10 +271,11 @@ class FacvFileLoaderServiceTest {
 
     @Test
     void shouldWrapIOExceptionFromLoadSingleFile(@TempDir Path tempDir) throws Exception {
-        TestLoaderProperties properties = baseProperties(tempDir);
         FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(
+                tempDir, parser, repository, true, Arrays.asList("CLFACV.txt"), 1000
+        );
 
         Method method = FacvFileLoaderService.class.getDeclaredMethod("loadSingleFile", Path.class);
         method.setAccessible(true);
@@ -297,10 +290,11 @@ class FacvFileLoaderServiceTest {
 
     @Test
     void shouldWrapIOExceptionFromMoveFile(@TempDir Path tempDir) throws Exception {
-        TestLoaderProperties properties = baseProperties(tempDir);
         FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
-        FacvFileLoaderService service = newService(properties, parser, repository);
+        FacvFileLoaderService service = newService(
+                tempDir, parser, repository, true, Arrays.asList("CLFACV.txt"), 1000
+        );
 
         Method method = FacvFileLoaderService.class.getDeclaredMethod("moveFile", Path.class, Path.class);
         method.setAccessible(true);
@@ -317,11 +311,20 @@ class FacvFileLoaderServiceTest {
 
     @Test
     void shouldResolveUniqueNameWithCounterAndWithoutExtension(@TempDir Path tempDir) throws Exception {
-        TestLoaderProperties properties = baseProperties(tempDir);
         FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
         LocalDateTime fixedNow = LocalDateTime.of(2026, 3, 9, 10, 11, 12, 123_000_000);
-        FacvFileLoaderService service = new FixedNowFacvFileLoaderService(properties, parser, repository, fixedNow);
+        FacvFileLoaderService service = new FixedNowFacvFileLoaderService(parser, repository, fixedNow);
+        configureService(
+                service,
+                true,
+                incomingDir(tempDir).toString(),
+                successDir(tempDir).toString(),
+                failedDir(tempDir).toString(),
+                Arrays.asList("CLFACV.txt"),
+                "UTF-8",
+                1000
+        );
 
         Path targetDir = tempDir.resolve("success");
         Files.createDirectories(targetDir);
@@ -335,36 +338,72 @@ class FacvFileLoaderServiceTest {
         Assertions.assertEquals("CLFACV_09032026_101112123_1", resolved.getFileName().toString());
     }
 
-    private static TestLoaderProperties baseProperties(Path root) {
-        TestLoaderProperties properties = new TestLoaderProperties();
-        properties.setEnabled(true);
-        properties.setCharset("UTF-8");
-        properties.setBatchSize(1000);
-        properties.setIncomingPath(root.resolve("incoming").toString());
-        properties.setSuccessPath(root.resolve("success").toString());
-        properties.setFailedPath(root.resolve("failed").toString());
-        properties.setFileNames(Arrays.asList("CLFACV.txt"));
-        return properties;
+    private static FacvFileLoaderService newService(
+            Path root,
+            FixedWidthFacvParser parser,
+            FacvRecordRepository repository,
+            boolean enabled,
+            List<String> fileNames,
+            int batchSize
+    ) {
+        return newService(
+                parser,
+                repository,
+                enabled,
+                incomingDir(root).toString(),
+                successDir(root).toString(),
+                failedDir(root).toString(),
+                fileNames,
+                "UTF-8",
+                batchSize
+        );
     }
 
     private static FacvFileLoaderService newService(
-            TestLoaderProperties properties,
             FixedWidthFacvParser parser,
-            FacvRecordRepository repository
+            FacvRecordRepository repository,
+            boolean enabled,
+            String incomingPath,
+            String successPath,
+            String failedPath,
+            List<String> fileNames,
+            String charset,
+            int batchSize
     ) {
         FacvFileLoaderService service = new FacvFileLoaderService(parser, repository);
-        applyProperties(service, properties);
+        configureService(service, enabled, incomingPath, successPath, failedPath, fileNames, charset, batchSize);
         return service;
     }
 
-    private static void applyProperties(FacvFileLoaderService service, TestLoaderProperties properties) {
-        ReflectionTestUtils.setField(service, "enabled", properties.isEnabled());
-        ReflectionTestUtils.setField(service, "incomingPath", properties.getIncomingPath());
-        ReflectionTestUtils.setField(service, "successPath", properties.getSuccessPath());
-        ReflectionTestUtils.setField(service, "failedPath", properties.getFailedPath());
-        ReflectionTestUtils.setField(service, "fileNames", properties.getFileNames());
-        ReflectionTestUtils.setField(service, "charset", properties.getCharset());
-        ReflectionTestUtils.setField(service, "batchSize", properties.getBatchSize());
+    private static void configureService(
+            FacvFileLoaderService service,
+            boolean enabled,
+            String incomingPath,
+            String successPath,
+            String failedPath,
+            List<String> fileNames,
+            String charset,
+            int batchSize
+    ) {
+        ReflectionTestUtils.setField(service, "enabled", enabled);
+        ReflectionTestUtils.setField(service, "incomingPath", incomingPath);
+        ReflectionTestUtils.setField(service, "successPath", successPath);
+        ReflectionTestUtils.setField(service, "failedPath", failedPath);
+        ReflectionTestUtils.setField(service, "fileNames", fileNames);
+        ReflectionTestUtils.setField(service, "charset", charset);
+        ReflectionTestUtils.setField(service, "batchSize", batchSize);
+    }
+
+    private static Path incomingDir(Path root) {
+        return root.resolve("incoming");
+    }
+
+    private static Path successDir(Path root) {
+        return root.resolve("success");
+    }
+
+    private static Path failedDir(Path root) {
+        return root.resolve("failed");
     }
 
     private static FacvRecord record(String key) {
@@ -391,86 +430,17 @@ class FacvFileLoaderServiceTest {
         private final LocalDateTime fixedNow;
 
         private FixedNowFacvFileLoaderService(
-                TestLoaderProperties properties,
                 FixedWidthFacvParser parser,
                 FacvRecordRepository repository,
                 LocalDateTime fixedNow
         ) {
             super(parser, repository);
-            applyProperties(this, properties);
             this.fixedNow = fixedNow;
         }
 
         @Override
         protected LocalDateTime now() {
             return fixedNow;
-        }
-    }
-
-    private static final class TestLoaderProperties {
-
-        private boolean enabled;
-        private String incomingPath;
-        private String successPath;
-        private String failedPath;
-        private List<String> fileNames;
-        private String charset;
-        private int batchSize;
-
-        private boolean isEnabled() {
-            return enabled;
-        }
-
-        private void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-
-        private String getIncomingPath() {
-            return incomingPath;
-        }
-
-        private void setIncomingPath(String incomingPath) {
-            this.incomingPath = incomingPath;
-        }
-
-        private String getSuccessPath() {
-            return successPath;
-        }
-
-        private void setSuccessPath(String successPath) {
-            this.successPath = successPath;
-        }
-
-        private String getFailedPath() {
-            return failedPath;
-        }
-
-        private void setFailedPath(String failedPath) {
-            this.failedPath = failedPath;
-        }
-
-        private List<String> getFileNames() {
-            return fileNames;
-        }
-
-        private void setFileNames(List<String> fileNames) {
-            this.fileNames = fileNames;
-        }
-
-        private String getCharset() {
-            return charset;
-        }
-
-        private void setCharset(String charset) {
-            this.charset = charset;
-        }
-
-        private int getBatchSize() {
-            return batchSize;
-        }
-
-        private void setBatchSize(int batchSize) {
-            this.batchSize = batchSize;
         }
     }
 }

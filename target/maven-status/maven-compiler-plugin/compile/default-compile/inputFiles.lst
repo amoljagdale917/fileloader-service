@@ -1,5 +1,4 @@
 /Users/amoljagdale/Documents/loader-services/src/main/java/com/loader/facv/repository/FacvRecordRepository.java
-/Users/amoljagdale/Documents/loader-services/src/main/java/com/loader/facv/LoaderProperties.java
 /Users/amoljagdale/Documents/loader-services/src/main/java/com/loader/facv/service/FacvFileLoaderService.java
 /Users/amoljagdale/Documents/loader-services/src/main/java/com/loader/facv/model/FacvRecord.java
 /Users/amoljagdale/Documents/loader-services/src/main/java/com/loader/facv/service/FixedWidthFacvParser.java

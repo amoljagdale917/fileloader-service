@@ -14,7 +14,6 @@ spring:
 
 loader:
   enabled: true
-  run-on-startup: false
   # Local machine default (no export needed)
   incoming-path: ${user.home}/Documents/hub/var/incoming
   success-path: ${user.home}/Documents/hub/var/success
