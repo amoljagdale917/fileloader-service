@@ -10,18 +10,13 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.loader.facv.model.FacvRecord;
 import com.loader.facv.repository.FacvRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.bind.Bindable;
-import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -43,13 +38,11 @@ public class FacvFileLoaderService {
     @Value("${loader.failed-path:hub/var/failed}")
     private String failedPath;
     @Value("${loader.file-names:}")
-    private List<String> fileNames = new ArrayList<String>();
+    private String fileNamesCsv;
     @Value("${loader.charset:UTF-8}")
     private String charset;
     @Value("${loader.batch-size:1000}")
     private int batchSize;
-    @Autowired(required = false)
-    private Environment environment;
 
     public long loadAllConfiguredFiles() {
         if (!enabled) {
@@ -57,7 +50,7 @@ public class FacvFileLoaderService {
             return 0L;
         }
 
-        List<String> configuredFileNames = resolveConfiguredFileNames();
+        List<String> configuredFileNames = resolveConfiguredFileNames(fileNamesCsv);
         if (configuredFileNames == null || configuredFileNames.isEmpty()) {
             log.warn("No file names configured under loader.file-names");
             return 0L;
@@ -188,33 +181,15 @@ public class FacvFileLoaderService {
         return candidate;
     }
 
-    private List<String> resolveConfiguredFileNames() {
-        List<String> namesFromValue = sanitizeFileNames(fileNames);
-        if (!namesFromValue.isEmpty()) {
-            return namesFromValue;
+    private List<String> resolveConfiguredFileNames(String rawCsv) {
+        if (rawCsv == null || rawCsv.trim().isEmpty()) {
+            return new ArrayList<String>(0);
         }
 
-        if (environment == null) {
-            return namesFromValue;
-        }
-
-        List<String> namesFromBinder = Binder.get(environment)
-                .bind("loader.file-names", Bindable.listOf(String.class))
-                .orElse(Collections.<String>emptyList());
-        return sanitizeFileNames(namesFromBinder);
-    }
-
-    private List<String> sanitizeFileNames(List<String> rawFileNames) {
-        if (rawFileNames == null || rawFileNames.isEmpty()) {
-            return Collections.<String>emptyList();
-        }
-
-        List<String> cleaned = new ArrayList<String>(rawFileNames.size());
-        for (String fileName : rawFileNames) {
-            if (fileName == null) {
-                continue;
-            }
-            String trimmed = fileName.trim();
+        String[] parts = rawCsv.split(",");
+        List<String> cleaned = new ArrayList<String>(parts.length);
+        for (String part : parts) {
+            String trimmed = part == null ? "" : part.trim();
             if (!trimmed.isEmpty()) {
                 cleaned.add(trimmed);
             }

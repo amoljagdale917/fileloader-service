@@ -5,7 +5,6 @@ import com.loader.facv.repository.FacvRecordRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.springframework.mock.env.MockEnvironment;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -76,22 +75,15 @@ class FacvFileLoaderServiceTest {
     }
 
     @Test
-    void shouldResolveFileNamesFromEnvironmentWhenValueBindingIsEmpty(@TempDir Path tempDir) throws Exception {
+    void shouldResolveFileNamesFromCsv() throws Exception {
         FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
         FacvRecordRepository repository = mock(FacvRecordRepository.class);
-        FacvFileLoaderService service = newService(
-                tempDir, parser, repository, true, Collections.<String>emptyList(), 1000
-        );
+        FacvFileLoaderService service = new FacvFileLoaderService(parser, repository);
 
-        MockEnvironment environment = new MockEnvironment();
-        environment.setProperty("loader.file-names[0]", "CLFACV.txt");
-        environment.setProperty("loader.file-names[1]", "CLFACVHASE.txt");
-        ReflectionTestUtils.setField(service, "environment", environment);
-
-        Method method = FacvFileLoaderService.class.getDeclaredMethod("resolveConfiguredFileNames");
+        Method method = FacvFileLoaderService.class.getDeclaredMethod("resolveConfiguredFileNames", String.class);
         method.setAccessible(true);
         @SuppressWarnings("unchecked")
-        List<String> fileNames = (List<String>) method.invoke(service);
+        List<String> fileNames = (List<String>) method.invoke(service, " CLFACV.txt , , CLFACVHASE.txt ");
 
         Assertions.assertEquals(Arrays.asList("CLFACV.txt", "CLFACVHASE.txt"), fileNames);
     }
@@ -242,7 +234,7 @@ class FacvFileLoaderServiceTest {
                 incomingAsFile.toString(),
                 successDir(tempDir).toString(),
                 failedDir(tempDir).toString(),
-                Arrays.asList("CLFACV.txt"),
+                "CLFACV.txt",
                 "UTF-8",
                 1000
         );
@@ -343,7 +335,7 @@ class FacvFileLoaderServiceTest {
                 incomingDir(tempDir).toString(),
                 successDir(tempDir).toString(),
                 failedDir(tempDir).toString(),
-                Arrays.asList("CLFACV.txt"),
+                "CLFACV.txt",
                 "UTF-8",
                 1000
         );
@@ -375,7 +367,7 @@ class FacvFileLoaderServiceTest {
                 incomingDir(root).toString(),
                 successDir(root).toString(),
                 failedDir(root).toString(),
-                fileNames,
+                fileNames == null ? null : joinFileNames(fileNames),
                 "UTF-8",
                 batchSize
         );
@@ -388,12 +380,12 @@ class FacvFileLoaderServiceTest {
             String incomingPath,
             String successPath,
             String failedPath,
-            List<String> fileNames,
+            String fileNamesCsv,
             String charset,
             int batchSize
     ) {
         FacvFileLoaderService service = new FacvFileLoaderService(parser, repository);
-        configureService(service, enabled, incomingPath, successPath, failedPath, fileNames, charset, batchSize);
+        configureService(service, enabled, incomingPath, successPath, failedPath, fileNamesCsv, charset, batchSize);
         return service;
     }
 
@@ -403,7 +395,7 @@ class FacvFileLoaderServiceTest {
             String incomingPath,
             String successPath,
             String failedPath,
-            List<String> fileNames,
+            String fileNamesCsv,
             String charset,
             int batchSize
     ) {
@@ -411,9 +403,23 @@ class FacvFileLoaderServiceTest {
         ReflectionTestUtils.setField(service, "incomingPath", incomingPath);
         ReflectionTestUtils.setField(service, "successPath", successPath);
         ReflectionTestUtils.setField(service, "failedPath", failedPath);
-        ReflectionTestUtils.setField(service, "fileNames", fileNames);
+        ReflectionTestUtils.setField(service, "fileNamesCsv", fileNamesCsv);
         ReflectionTestUtils.setField(service, "charset", charset);
         ReflectionTestUtils.setField(service, "batchSize", batchSize);
+    }
+
+    private static String joinFileNames(List<String> fileNames) {
+        if (fileNames == null || fileNames.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < fileNames.size(); i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append(fileNames.get(i));
+        }
+        return sb.toString();
     }
 
     private static Path incomingDir(Path root) {

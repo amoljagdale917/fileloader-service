@@ -18,9 +18,7 @@ loader:
   incoming-path: ${user.home}/Documents/hub/var/incoming
   success-path: ${user.home}/Documents/hub/var/success
   failed-path: ${user.home}/Documents/hub/var/failed
-  file-names:
-    - CLFACV.txt
-    - CLFACVHASE.txt
+  file-names: CLFACV.txt,CLFACVHASE.txt
   charset: UTF-8
   batch-size: 1000
   # Every 5 minutes for testing

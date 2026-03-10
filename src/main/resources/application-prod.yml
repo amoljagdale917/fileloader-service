@@ -17,9 +17,7 @@ loader:
   incoming-path: /hub/var/incoming
   success-path: /hub/var/success
   failed-path: /hub/var/failed
-  file-names:
-    - CLFACV.txt
-    - CLFACVHASE.txt
+  file-names: CLFACV.txt,CLFACVHASE.txt
   charset: UTF-8
   batch-size: 1000
   # End-of-day scheduler
