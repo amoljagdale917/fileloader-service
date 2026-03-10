@@ -43,7 +43,6 @@ Important properties:
 - `loader.batch-size`: batch insert size (default `1000`).
 - `loader.schedule-cron`: scheduler cron (default end-of-day `0 59 23 * * *`).
 - `loader.schedule-zone`: scheduler timezone.
-- `loader.run-on-startup`: set `true` to load immediately on app start.
 
 Profiles:
 - `dev`: Oracle SQL Developer local configuration (`application-dev.yml`)
@@ -83,7 +82,7 @@ IntelliJ Run Configuration:
 - Manual script: `sql/create_stg_hk_obs_facv.sql`
 
 ## Runtime Trigger
-- Loader runs via scheduler (`loader.schedule-cron`) and optional startup trigger (`loader.run-on-startup=true`).
+- Loader runs only via scheduler (`loader.schedule-cron`).
 - No REST controller is exposed.
 
 ## Postman

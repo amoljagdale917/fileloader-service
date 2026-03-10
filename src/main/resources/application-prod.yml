@@ -13,7 +13,6 @@ spring:
 
 loader:
   enabled: true
-  run-on-startup: false
   # Production directories
   incoming-path: /hub/var/incoming
   success-path: /hub/var/success
