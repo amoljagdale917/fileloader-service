@@ -38,7 +38,7 @@ public class FacvFileLoaderService {
         }
 
 <span class="fc" id="L40">        List&lt;String&gt; fileNames = properties.getFileNames();</span>
-<span class="pc bpc" id="L41" title="1 of 4 branches missed.">        if (fileNames == null || fileNames.isEmpty()) {</span>
+<span class="fc bfc" id="L41" title="All 4 branches covered.">        if (fileNames == null || fileNames.isEmpty()) {</span>
 <span class="fc" id="L42">            log.warn(&quot;No file names configured under loader.file-names&quot;);</span>
 <span class="fc" id="L43">            return 0L;</span>
         }
@@ -58,7 +58,7 @@ public class FacvFileLoaderService {
 <span class="fc" id="L58">        long totalInserted = 0L;</span>
 <span class="fc bfc" id="L59" title="All 2 branches covered.">        for (String fileName : fileNames) {</span>
 <span class="fc" id="L60">            Path filePath = incomingPath.resolve(fileName);</span>
-<span class="pc bpc" id="L61" title="1 of 4 branches missed.">            if (!Files.exists(filePath) || !Files.isRegularFile(filePath)) {</span>
+<span class="fc bfc" id="L61" title="All 4 branches covered.">            if (!Files.exists(filePath) || !Files.isRegularFile(filePath)) {</span>
 <span class="fc" id="L62">                log.warn(&quot;File not found or not regular file, skipping: {}&quot;, filePath.toAbsolutePath());</span>
 <span class="fc" id="L63">                continue;</span>
             }
@@ -106,7 +106,7 @@ public class FacvFileLoaderService {
                 }
 <span class="fc" id="L107">            }</span>
 
-<span class="pc bpc" id="L109" title="1 of 2 branches missed.">            if (!buffer.isEmpty()) {</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">            if (!buffer.isEmpty()) {</span>
 <span class="fc" id="L110">                repository.batchInsert(buffer);</span>
 <span class="fc" id="L111">                insertedRows += buffer.size();</span>
 <span class="fc" id="L112">                buffer.clear();</span>
