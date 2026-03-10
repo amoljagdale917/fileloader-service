@@ -1,6 +1,7 @@
 package com.loader.facv.service;
 
 import com.loader.facv.model.FacvRecord;
+import com.loader.facv.util.FixedWidthParserUtils;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -11,53 +12,20 @@ public class FixedWidthFacvParser {
     private static final int TOTAL_RECORD_LENGTH = 66;
 
     public FacvRecord parse(String line) {
-        String normalized = normalize(line);
+        String normalized = FixedWidthParserUtils.normalize(line, TOTAL_RECORD_LENGTH);
         FacvRecord record = new FacvRecord();
-        record.setBnkNo(extract(normalized, 0, 3));
-        record.setCustAcctNo(extract(normalized, 3, 15));
-        record.setSysCode(extract(normalized, 15, 18));
-        record.setRecType(extract(normalized, 18, 19));
-        record.setCustGp(extract(normalized, 19, 20));
-        record.setItlCustNo(extract(normalized, 20, 31));
-        record.setFiller(extract(normalized, 31, 42));
-        record.setLmtId(extract(normalized, 42, 47));
-        record.setCustId(extract(normalized, 47, 58));
-        record.setFiller1(extract(normalized, 58, 65));
-        record.setMaintAcct(extract(normalized, 65, 66));
+        record.setBnkNo(FixedWidthParserUtils.extract(normalized, 0, 3));
+        record.setCustAcctNo(FixedWidthParserUtils.extract(normalized, 3, 15));
+        record.setSysCode(FixedWidthParserUtils.extract(normalized, 15, 18));
+        record.setRecType(FixedWidthParserUtils.extract(normalized, 18, 19));
+        record.setCustGp(FixedWidthParserUtils.extract(normalized, 19, 20));
+        record.setItlCustNo(FixedWidthParserUtils.extract(normalized, 20, 31));
+        record.setFiller(FixedWidthParserUtils.extract(normalized, 31, 42));
+        record.setLmtId(FixedWidthParserUtils.extract(normalized, 42, 47));
+        record.setCustId(FixedWidthParserUtils.extract(normalized, 47, 58));
+        record.setFiller1(FixedWidthParserUtils.extract(normalized, 58, 65));
+        record.setMaintAcct(FixedWidthParserUtils.extract(normalized, 65, 66));
         return record;
-    }
-
-    private String normalize(String line) {
-        if (line == null) {
-            return repeatSpace(TOTAL_RECORD_LENGTH);
-        }
-
-        if (line.length() >= TOTAL_RECORD_LENGTH) {
-            return line.substring(0, TOTAL_RECORD_LENGTH);
-        }
-
-        StringBuilder sb = new StringBuilder(line);
-        while (sb.length() < TOTAL_RECORD_LENGTH) {
-            sb.append(' ');
-        }
-        return sb.toString();
-    }
-
-    private String repeatSpace(int length) {
-        char[] chars = new char[length];
-        for (int i = 0; i < length; i++) {
-            chars[i] = ' ';
-        }
-        return new String(chars);
-    }
-
-    private String extract(String source, int startInclusive, int endExclusive) {
-        String value = source.substring(startInclusive, endExclusive);
-        String trimmed = value.trim();
-        if (trimmed.isEmpty()) {
-            return null;
-        }
-        return trimmed;
     }
 
     public List<String> expectedColumnLengths() {

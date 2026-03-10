@@ -1,4 +1,5 @@
+com/loader/facv/service/FacvFileLoaderServiceTest$1.class
 com/loader/facv/service/FacvFileLoaderServiceTest$FixedNowFacvFileLoaderService.class
 com/loader/facv/service/FacvFileLoaderServiceTest.class
-com/loader/facv/service/FacvFileLoaderServiceTest$1.class
 com/loader/facv/service/FixedWidthFacvParserTest.class
+com/loader/facv/util/FixedWidthParserUtilsTest.class
