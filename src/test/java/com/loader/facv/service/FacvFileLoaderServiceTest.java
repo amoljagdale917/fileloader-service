@@ -5,6 +5,7 @@ import com.loader.facv.repository.FacvRecordRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -72,6 +73,27 @@ class FacvFileLoaderServiceTest {
         Assertions.assertEquals(0L, inserted);
         verifyNoInteractions(parser);
         verifyNoInteractions(repository);
+    }
+
+    @Test
+    void shouldResolveFileNamesFromEnvironmentWhenValueBindingIsEmpty(@TempDir Path tempDir) throws Exception {
+        FixedWidthFacvParser parser = mock(FixedWidthFacvParser.class);
+        FacvRecordRepository repository = mock(FacvRecordRepository.class);
+        FacvFileLoaderService service = newService(
+                tempDir, parser, repository, true, Collections.<String>emptyList(), 1000
+        );
+
+        MockEnvironment environment = new MockEnvironment();
+        environment.setProperty("loader.file-names[0]", "CLFACV.txt");
+        environment.setProperty("loader.file-names[1]", "CLFACVHASE.txt");
+        ReflectionTestUtils.setField(service, "environment", environment);
+
+        Method method = FacvFileLoaderService.class.getDeclaredMethod("resolveConfiguredFileNames");
+        method.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        List<String> fileNames = (List<String>) method.invoke(service);
+
+        Assertions.assertEquals(Arrays.asList("CLFACV.txt", "CLFACVHASE.txt"), fileNames);
     }
 
     @Test

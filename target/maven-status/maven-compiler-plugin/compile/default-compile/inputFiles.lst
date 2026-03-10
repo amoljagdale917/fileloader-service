@@ -4,3 +4,4 @@
 /Users/amoljagdale/Documents/loader-services/src/main/java/com/loader/facv/service/FixedWidthFacvParser.java
 /Users/amoljagdale/Documents/loader-services/src/main/java/com/loader/facv/scheduler/FacvLoadScheduler.java
 /Users/amoljagdale/Documents/loader-services/src/main/java/com/loader/facv/FacvLoaderApplication.java
+/Users/amoljagdale/Documents/loader-services/src/main/java/com/loader/facv/util/FixedWidthParserUtils.java
